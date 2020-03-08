@@ -2039,7 +2039,7 @@ button.alt:active,
 }
 
 #header p {
-	text-transform: uppercase;
+	/* text-transform: uppercase; */
 	font-weight: 400;
 	color: #888;
 	margin: 2.5em 0 0 0;
