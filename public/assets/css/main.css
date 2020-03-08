@@ -2853,3 +2853,19 @@ button.alt:active,
 	margin-right: auto;
 	width: 50%;
 }
+
+.suggestionTable {
+	padding-top: 50px;
+	text-align: center;
+	margin: 0 auto;
+	width: 400px;
+}
+
+.suggestionTable th {
+	text-align: center;
+}
+
+div#analyzedText {
+	border: 1px solid black;
+	padding: 25px;
+}
