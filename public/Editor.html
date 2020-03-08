@@ -24,7 +24,7 @@
 
 				<!-- Logo -->
 				<h1 id="logo"><a href="index.html"></a>hireHER</a></h1>
-				<p>Our slogan</p>
+				<p>CHANGING PERSPECTIVES</p>
 
 				<!-- Nav -->
 				<nav id="nav">
@@ -41,24 +41,15 @@
 					<script>
 						$(function () {
 							$.getJSON('result.json', function (text) {
-								// console.log(data);
-								var selectText = [
-									'challenge',
-									'boss',
-									'decisive',
-									'leader'
-								]
-								for (let word of selectText) {
-									// console.log(text);
+								console.log(text);
+								var jobPosting = text.text[0];
+								var keywords = text.keywords;
+								for (let word of keywords) {
 									var replace = "regex";
 									var re = new RegExp(word, "g");
-									// console.log(re);
-									text = text.replace(re, '<span class="highlight">' + word + '</span>')
+									jobPosting = jobPosting.replace(re, '<span class="highlight">' + word + '</span>')
 								}
-								// text = text.replace(/openness/g, "<span class='highlight'>XYZ</span>")
-								// console.log(text);
-								let sendData = "<div id='analyzedText'>" + text + "</div>"
-								// console.log(sendData);
+								let sendData = "<div id='analyzedText'>" + jobPosting + "</div>"
 								$(sendData).appendTo("section#main")
 								let tableHtml =
 									"<div class='suggestionTable'><table><tr><th>Masculine Words</th><th>Suggestion</th></tr><tr><td>Challenge</td><td>Motivate</td></tr><tr><td>He</td><td>You</td></tr><tr><td>Boss</td><td>Head</td></tr><tr><td>Decisive</td><td>Quick-witted</td><tr><td>Leader</td><td>Role model</td></tr></tr></table></div>"

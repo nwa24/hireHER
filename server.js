@@ -4,29 +4,47 @@ const app = express();
 const url = require("url");
 const fs = require("fs");
 const vision = require("@google-cloud/vision");
+const fileUpload = require("express-fileupload");
+const npl = require("./scripts/npl");
 
-// const analyzeText = require("./scripts/npl");
+// default options
+app.use(fileUpload());
 
+// Global variables
 const {
     Storage
 } = require("@google-cloud/storage");
 
-// Global variables
 const storage = new Storage({
     keyFilename: "APIKey.json",
     projectId: "single-howl-270523"
 });
 
-async function getTextFromPdf() {
+const bucketName = "hirehertest";
+
+// Functions
+async function uploadToStorage(filePath, fileName) {
+    console.log(filePath);
+
+    // Uploads a local file to the bucket
+    await storage.bucket(bucketName).upload(filePath, {});
+
+    console.log("Uploaded to Google Cloud Storage");
+
+    getTextFromPdf(fileName);
+}
+
+async function getTextFromPdf(fileName) {
     const client = new vision.ImageAnnotatorClient({
         keyFilename: "APIKey.json"
     });
-    const outputPrefix = "pdf_results";
-    const bucketName = "hirehertest";
-    const fileName = "shorter-file_name.pdf";
+    const outputPrefix = "results";
+    // const fileName = "shorter-file_name.pdf";
 
     const gcsSourceUri = `gs://${bucketName}/${fileName}`;
     const gcsDestinationUri = `gs://${bucketName}/${outputPrefix}`;
+
+    console.log(gcsSourceUri);
 
     const inputConfig = {
         mimeType: "application/pdf",
@@ -57,23 +75,37 @@ async function getTextFromPdf() {
     const destinationUri =
         filesResponse.responses[0].outputConfig.gcsDestination.uri;
     console.log("Json saved to: " + destinationUri);
+
+    downloadJson();
 }
 
-// async function getImageText() {
-//     console.log("Get Image")
-//     const client = new vision.ImageAnnotatorClient({
-//         keyFilename: "APIKey.json"
-//     });
-
-//     const bucketName = "hirehertest";
-//     const fileName = "test.png";
-//     const [result] = await client.textDetection(`gs://${bucketName}/${fileName}`);
-//     const detections = result.textAnnotations;
-//     fs.writeFile("text.txt", detections[0].description, (err) => {
-//         if (err) throw err;
-//         console.log("Finishing writting to file")
-//     })
-// }
+function downloadJson() {
+    let buff = "";
+    let text = "";
+    storage
+        .bucket("hirehertest")
+        .file("resultsoutput-1-to-1.json")
+        .createReadStream()
+        .on("error", function (err) {
+            return err;
+        })
+        .on("data", function (d) {
+            buff += d;
+        })
+        .on("end", function () {
+            const parsedObject = JSON.parse(buff);
+            text = parsedObject.responses[0].fullTextAnnotation.text;
+            let results = {
+                text: [text],
+                keywords: ["challenge", "boss", "decisive", "leader"]
+            };
+            results = JSON.stringify(results);
+            fs.writeFile(__dirname + "/public/result.json", results, 'utf8', err => {
+                if (err) throw err;
+                console.log("Written file");
+            });
+        });
+}
 
 // Set the server to listen to 3000
 app.listen(3000);
@@ -84,37 +116,27 @@ app.use("/", express.static("public"));
 // On Analyze.html when the user clicks the submit button
 app.post("/Analyze.html", function (req, res) {
     try {
-        // let text = getImageText();
-        // fs.writeFile("text.txt", text, (err) => {
-        //     if (err) throw err;
-        //     console.log("Written file");
-        // })
-        // res.redirect("/Editor.html");
-        // getTextFromPdf();
-        // let buff = "";
-        // let text = "";
-        // storage
-        //     .bucket("hirehertest")
-        //     .file("pdf_resultsoutput-1-to-1.json")
-        //     .createReadStream()
-        //     .on("error", function (err) {
-        //         return err;
-        //     })
-        //     .on("data", function (d) {
-        //         buff += d;
-        //     })
-        //     .on("end", function () {
-        //         const parsedObject = JSON.parse(buff);
-        //         text = parsedObject.responses[0].fullTextAnnotation.text;
-        //         text = JSON.stringify(text);
-        //         console.log(text);
-        //         fs.writeFile("result.json", text, err => {
-        //             if (err) throw err;
-        //             console.log("Written file");
-        //         });
-        //         res.redirect("/Editor.html");
-        //     });
-        res.redirect("/Editor.html")
+        // Uploading file to local server
+        console.log(req.files);
+        let file = req.files.filename;
+        let fileName = req.files.filename.name;
+        let filePath = __dirname + "/pdfFiles/" + fileName;
+
+        file.mv(filePath, function (err) {
+            if (err) throw err;
+            console.log("File Uploaded to Folder");
+        });
+
+        // Upload File to Google Cloud Storage
+        uploadToStorage(filePath, fileName);
+
+        setTimeout(function () {
+            res.redirect("/Editor.html");
+        }, 18000);
+
+        // uploadToStorage(filePath, fileName);
+
+        // Redirect the page after to show the results
     } catch (err) {
         console.log(err);
     }
