@@ -11,6 +11,7 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 	<link rel="stylesheet" href="assets/css/main.css" />
+	<!-- <script src="https://cdn.jsdelivr.net/mark.js/8.6.0/jquery.mark.min.js"></script> -->
 </head>
 
 <body class="no-sidebar is-preload">
@@ -74,11 +75,29 @@
 						<section id="main">
 							<script>
 								$(function () {
-									$.getJSON('result.json', function (data) {
-										console.log(data);
-										let sendData = "<p>" + data + "</p>"
+									$.getJSON('result.json', function (text) {
+										// console.log(data);
+										var selectText = [
+											'openness',
+											'independence',
+											'analytical',
+											'outspoken',
+											'ambitious',
+											'rockstars'
+										]
+										for (let word of selectText) {
+											// console.log(text);
+											var replace = "regex";
+											var re = new RegExp(word, "g");
+											// console.log(re);
+											text = text.replace(re, '<span class="highlight">' + word + '</span>')
+										}
+										// text = text.replace(/openness/g, "<span class='highlight'>XYZ</span>")
+										// console.log(text);
+										let sendData = "<div id='analyzedText'>" + text + "</div>"
+										// console.log(sendData);
 										$(sendData).appendTo("section#main")
-									})
+									});
 								})
 							</script>
 						</section>
