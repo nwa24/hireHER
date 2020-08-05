@@ -22,7 +22,7 @@
     "@google-cloud/vision": "^1.10.0",
     "csv": "^0.3.7",
     "express": "^4.17.1",
-    "express-fileupload": "^1.1.6",
+    "express-fileupload": "^1.1.9",
     "google-cloud-node": "0.0.1-security",
     "mark.js": "^8.11.1",
     "natural": "^0.6.3",
